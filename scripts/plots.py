@@ -106,10 +106,50 @@ def plot_relationship(
     # Customize the plot
     plt.title(f"Relationship between {x_col} and {y_col}\nCorrelation: {correlation:.2f}")
     plt.xlabel(x_col)
-    plt.ylabel("Total Carbon dioxide emissions [m tonnes]")
+    plt.ylabel(y_col)
 
     # Remove the top and right part of the box
     sns.despine(top=True, right=True)
 
     # Display the plot
+    plt.show()
+
+
+def plot_bar_plot(df, x_col, y_col):
+    """
+    Plot a bar plot of the specified columns in the DataFrame.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing the columns.
+        x_col (str): The name of the column for the x-axis.
+        y_col (str): The name of the column for the y-axis.
+    """
+    plt.figure(figsize=(12, 6))
+    sns.barplot(x=x_col, y=y_col, data=df, errorbar=None)
+    plt.xticks(rotation="vertical")
+
+    plt.title(f"Mean Technical Efficiency Value by {x_col} (Bar Plot)")
+    plt.xlabel(x_col)
+    plt.ylabel(y_col)
+    sns.despine(top=True, right=True)
+    plt.show()
+
+
+def plot_bar_plot(df, x_col, y_col):
+    """
+    Plot a bar plot of the specified columns in the DataFrame.
+
+    Args:
+        df (pd.DataFrame): The input DataFrame containing the columns.
+        x_col (str): The name of the column for the x-axis.
+        y_col (str): The name of the column for the y-axis.
+    """
+    plt.figure(figsize=(12, 6))
+    sns.barplot(x=x_col, y=y_col, data=df, errorbar=None)
+    plt.xticks(rotation="vertical")
+
+    plt.title(f"Mean Technical Efficiency Value by {x_col} (Bar Plot)")
+    plt.xlabel(x_col)
+    plt.ylabel(y_col)
+    sns.despine(top=True, right=True)
     plt.show()

@@ -1,7 +1,13 @@
 import logging
+import warnings
 from pathlib import Path
 
 import pandas as pd
+
+warnings.filterwarnings(
+    "ignore", category=UserWarning, message="Workbook contains no default style, apply openpyxl's default"
+)
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 

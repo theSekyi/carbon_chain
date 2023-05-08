@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 import pandas as pd
@@ -80,7 +81,9 @@ def drop_columns_above_threshold(original_df, missing_percentage_df, threshold):
     return original_df.drop(columns=columns_to_drop)
 
 
-def calculate_correlation(data, method="pearson"):
+def calculate_correlation(
+    data, method="pearson", column1="Total fuel consumption [m tonnes]", column2="Total CO₂ emissions [m tonnes]"
+):
     """
     Calculate the correlation coefficient between 'Total fuel consumption [m tonnes]'
     and 'Total CO₂ emissions [m tonnes]' columns in the DataFrame.
@@ -92,8 +95,6 @@ def calculate_correlation(data, method="pearson"):
     Returns:
         float: The correlation coefficient.
     """
-    column1 = "Total fuel consumption [m tonnes]"
-    column2 = "Total CO₂ emissions [m tonnes]"
     correlation = data[column1].corr(data[column2], method=method)
     return correlation
 
@@ -125,21 +126,91 @@ def group_by_ship_type(df, column):
     return df.groupby("Ship type")[column].mean().reset_index()
 
 
-def plot_bar_plot(df, x_col, y_col):
+def year_to_last_day(year):
     """
-    Plot a bar plot of the specified columns in the DataFrame.
+    Convert a given year to the last day of that year (December 31st).
 
     Args:
-        df (pd.DataFrame): The input DataFrame containing the columns.
-        x_col (str): The name of the column for the x-axis.
-        y_col (str): The name of the column for the y-axis.
-    """
-    plt.figure(figsize=(12, 6))
-    sns.barplot(x=x_col, y=y_col, data=df, errorbar=None)
-    plt.xticks(rotation="vertical")
+        year (int, str): The year as an integer or a string that can be converted to an integer.
 
-    plt.title(f"Mean Technical Efficiency Value by {x_col} (Bar Plot)")
-    plt.xlabel(x_col)
-    plt.ylabel(y_col)
-    sns.despine(top=True, right=True)
-    plt.show()
+    Returns:
+        datetime.date: A datetime.date object representing December 31st of the given year.
+        None: If the input cannot be converted to an integer or if the input is invalid.
+    """
+    try:
+        year = int(year)
+    except (TypeError, ValueError):
+        return None
+
+    return datetime.date(year, 12, 31)
+
+
+def convert_reporting_column(df, column_name, date_conversion_func, date_format):
+    """
+    Convert the specified column in the DataFrame to a new date format using a given date conversion function.
+    
+    Args:
+        df (pd.DataFrame): The DataFrame containing the column to convert.
+        column_name (str): The name of the column to convert.
+        date_conversion_func (function): The function to apply to each date in the column.
+        date_format (str): The new date format to apply to the converted column.
+        
+    Returns:
+        pd.DataFrame: The DataFrame with the specified column converted to the new date format.
+    """
+    df[column_name] = pd.to_datetime(df[column_name].apply(date_conversion_func))
+    df[column_name] = df[column_name].dt.strftime("%d/%m/%Y")
+    return df
+
+
+def filter_by_date_format(df, column_name, date_format_regex):
+    """
+    Filter the DataFrame by keeping rows where the specified column matches the given date format regex.
+    
+    Args:
+        df (pd.DataFrame): The DataFrame containing the column to filter.
+        column_name (str): The name of the column to filter.
+        date_format_regex (str): The regex pattern representing the date format to filter by.
+        
+    Returns:
+        pd.DataFrame: The DataFrame filtered by the specified date format regex.
+    """
+    df[column_name] = df[column_name].astype(str)
+    date_format_mask = df[column_name].str.match(date_format_regex)
+    return df[date_format_mask]
+
+
+def convert_to_csv(df, file_path):
+    """
+    Convert a pandas DataFrame to a CSV file and save it to the specified file path.
+
+    Args:
+        df (pandas.DataFrame): The DataFrame to be converted and saved as a CSV file.
+        file_path (str): The file path where the CSV file should be saved, including the file name.
+
+    Returns:
+        None: This function does not return any value. It saves the DataFrame as a CSV file at the specified file path.
+    """
+    df.to_csv(file_path, index=False)
+
+
+date_cols = ["DoC issue date", "Reporting Period", "DoC expiry date"]
+
+
+def convert_and_format_date_columns_to_string(df: pd.DataFrame, date_columns: list = date_cols) -> pd.DataFrame:
+    """
+    Convert date strings in a DataFrame to the format 'YYYY-MM-DD' and store them as strings.
+
+    :param df: The input DataFrame
+    :param date_columns: A list of column names to reformat (default: ['Reporting Period', 'DoC issue date', 'DoC expiry date'])
+    :return: The modified DataFrame with date columns reformatted as strings
+    """
+    if date_columns is None:
+        date_columns = ["Reporting Period", "DoC issue date", "DoC expiry date"]
+
+    for col in date_columns:
+        if col in df.columns and df[col].dtype == "object":
+            df[col] = pd.to_datetime(df[col], format="%d/%m/%Y", errors="coerce").dt.strftime("%Y-%m-%d").astype(str)
+
+    return df
+
