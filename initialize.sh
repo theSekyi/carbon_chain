@@ -1,8 +1,19 @@
 #!/bin/bash
 
+DIRECTORY="backend/app/data"
+
 # Making the entrypoint script executable
 echo "Setting execute permissions for backend/entrypoint.sh"
 chmod +x backend/entrypoint.sh
+
+
+
+if [ ! -d "$DIRECTORY" ]; then
+  echo "Directory does not exist. Creating..."
+  mkdir -p "$DIRECTORY"
+else
+  echo "Directory already exists."
+fi
 
 
 # Running the Python script to prepare the database data

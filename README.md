@@ -9,7 +9,7 @@ python -m venv .venv && source .venv/bin/activate && pip install -r requirements
 ```
 
 2. Download all 4 excel files and put it in a folder called data <br>
-   a. Mkdir directory caked data
+   a. Make directory called data
 
 ```
 mkdir data
